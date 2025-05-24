@@ -15,3 +15,9 @@ vim.keymap.set("n", "<leader>p", '"+p', { noremap = true, silent = true })
 vim.keymap.set("n", "<leader>P", '"+P', { noremap = true, silent = true })
 vim.keymap.set("v", "<leader>p", '"+p', { noremap = true, silent = true })
 
+-- image preview
+vim.keymap.set("n", "<leader>ip", function()
+  require("image.preview").from_path(vim.fn.expand("%:p"))
+end, { desc = "Preview current image" })
+
+

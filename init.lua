@@ -27,6 +27,12 @@ vim.cmd("Plug 'akinsho/toggleterm.nvim', {'tag' : '*'}")
 -- alpha vim
 vim.cmd("Plug 'goolord/alpha-nvim'")
 vim.cmd("Plug 'nvim-tree/nvim-web-devicons'")
+
+-- Image
+vim.cmd("Plug '3rd/image.nvim'")
+--vim.cmd [[Plug '3rd/image.nvim']]
+--+Plug '3rd/image.nvim'
+
 vim.cmd("call plug#end()")
 
 -- Enable true colors (24-bit)
@@ -60,7 +66,41 @@ require("nvim-tree").setup({
       },
     },
   },
+  actions = {
+    open_file = {
+      quit_on_open = false,
+    },
+  },
+  on_attach = function(bufnr)
+    local api = require("nvim-tree.api")
+    local image = require("image")
+
+    local function preview_image_on_select()
+      local node = api.tree.get_node_under_cursor()
+      if node and node.absolute_path then
+        local path = node.absolute_path
+        -- Only attempt to preview image files
+        if path:match("%.png$") or path:match("%.jpg$") or path:match("%.jpeg$") then
+          -- Add error handling and proper buffer management
+          pcall(function()
+            image.show(path, {
+              buffer = bufnr,
+              backend = "kitty",
+              with_virtual_padding = true,
+              window_overlap = "allow"
+            })
+          end)
+        end
+      end
+    end
+
+    vim.keymap.set("n", "<CR>", function()
+      preview_image_on_select()
+      api.node.open.edit()
+    end, { buffer = bufnr })
+  end,
 })
+
 vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>", { noremap = true, silent = true })
 
 -- Fuzzy Finser
@@ -97,7 +137,18 @@ require("toggleterm").setup{
   	open_mapping = [[<c-\>]]
 }
 
+require("image").setup({
+  backend = "kitty",  -- use kitty backend
+  integrations = {
+    markdown = { enabled = true },
+  },
+})
+
+
 require("config.lsp")
 require("config.cmp")
 require("keymaps")
 require("config.alpha")
+-- image
+require("config.image")
+require("config.autopreview")
